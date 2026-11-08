@@ -7,8 +7,8 @@ It contains a sample Rigby2D character project, a ready-to-run copy of the Rigby
 server (Node.js), and a Python demo client that edits the character's animation.
 
 ```
-rigby_mcp_arms.py  ->  spawns MCP server (stdio)  ->  input/test.rigby -> output/test.rigby
-                                                       + logs/run-<timestamp>.log
+add_arms_up.py      ->  spawns MCP server (stdio)  ->  input/test.rigby -> output/test.rigby
+rigby2d_mcp_utils.py       (shared client, logging, paths)   + logs/run-<timestamp>.log
 ```
 
 Everything here is English-only: code, comments, docs, commit messages.
@@ -19,14 +19,19 @@ Everything here is English-only: code, comments, docs, commit messages.
 
 | Path | What it is |
 | --- | --- |
-| `rigby_mcp_arms.py` | Demo MCP client. Reads `input/test.rigby`, adds an `arms_up` animation (arms rise, then lower), writes `output/test.rigby` and logs the run. |
-| `input/test.rigby` | Sample character work file ("NILA"): 39 bones, 42 slots, 1 skin, 10 constraints, animations `idle` and `arms_up`. The script never modifies it. |
-| `output/` | Generated: the edited project. Recreated on every run. |
-| `logs/` | Generated: one `run-<timestamp>.log` per run, with the steps, arguments and errors. |
+| `add_arms_up.py` | Demo script. Reads the input project, adds an `arms_up` animation (arms rise, then lower) and writes the output project. |
+| `rigby2d_mcp_utils.py` | Reusable MCP client: process launch, JSON-RPC transport, Node.js and server discovery, path validation, `RunLog`. Import it from any new script. |
+| `run_add_animation.bat` | Convenience wrapper that sets the environment the script needs and runs it. |
+| `input/test.rigby` | Local, git-ignored. Sample character work file ("NILA"): 39 bones, 42 slots, 1 skin, 10 constraints, animations `idle` and `arms_up`. The script never modifies it. |
+| `output/` | Local, git-ignored. Generated: the edited project. Recreated on every run. |
+| `logs/` | Local, git-ignored. Generated: one `run-<timestamp>.log` per run, with the steps, arguments and errors. |
 | `_tools/mcp-server/` | The Rigby2D MCP server, unpacked from `Rigby2D-AI.mcpb`. Self-contained: own `src/` and `node_modules/`. |
 | `_tools/start_mcpServer.bat` | Windows launcher for the server with `--root` set to this repository. |
 | `_tools/mcpServers.json` | Example MCP client configuration. |
-| `_INFO/` | Reference material, not used at runtime: upstream sources and docs (`rigby2d-develop/`), the packaged `.mcpb`, the extension manifest, third-party notices, the original project as received (`backups/`), and a legacy unpacked server copy (`reference-src/`). The last two are git-ignored. |
+| `_INFO/` | Local, git-ignored. Reference material, not used at runtime: upstream sources and docs (`rigby2d-develop/`), the packaged `.mcpb`, the extension manifest, third-party notices, the original project as received (`backups/`), and a legacy unpacked server copy (`reference-src/`). |
+
+The repository tracks the code and the server: the project data (`input/`, `output/`, `logs/`)
+and the reference material (`_INFO/`) stay on your machine.
 
 ---
 
@@ -43,11 +48,21 @@ The server reads and writes only inside the folders given with `--root`.
 ## Quick start
 
 ```powershell
-# 1. Run the demo: reads input/test.rigby, writes output/test.rigby
-python rigby_mcp_arms.py
+# 1. Add the animation: reads input/test.rigby, writes output/test.rigby
+python add_arms_up.py
 
-# 2. Start Rigby2D (Rigby2D_x64_portable.exe, in the folder above),
+# 2. Start Rigby2D (Rigby2D_0.5.0_x64_portable.exe, in the folder above),
 #    open output\test.rigby and pick "arms_up" in the animation list
+```
+
+The script takes the input and output project as optional arguments; paths are relative
+to the repository root and the output folder is created when missing:
+
+```powershell
+python add_arms_up.py                                     # default paths
+python add_arms_up.py input/hero.rigby                     # -> output/hero.rigby
+python add_arms_up.py input/hero.rigby build/hero.rigby    # explicit output
+python add_arms_up.py --help
 ```
 
 Expected output (world-space hand positions, Y up):
@@ -121,17 +136,38 @@ Full references: `_INFO/rigby2d-develop/docs/mcp.md` and
 
 ## How the demo client works
 
-`rigby_mcp_arms.py` is a minimal MCP client with no third-party dependencies:
+The code is split in two files:
 
-1. **Transport** — starts `node server.js --root <repo>` and speaks JSON-RPC 2.0 over
-   stdin/stdout, one message per line. `stderr` is drained on a background thread.
+- **`rigby2d_mcp_utils.py`** — everything that is not specific to this animation:
+  `RunLog`, `find_node`, `find_server`, path validation, `RigbyMcpClient`, and the
+  `connect()` context manager. Reuse it from any new script.
+- **`add_arms_up.py`** — the arm animation: `arms_up_operations()` and `add_arms_up()`.
+
+The run:
+
+1. **Transport** — `connect()` starts `node server.js --root <repo>` and speaks JSON-RPC 2.0
+   over stdin/stdout, one message per line. `stderr` is drained on a background thread.
 2. **Handshake** — `initialize` (protocol `2025-06-18`), then `notifications/initialized`.
-3. **Read** — `inspect_project` on `input/test.rigby` to list the animations.
+3. **Read** — `inspect_project` to list the animations of the input.
 4. **Write** — one atomic `batch_edit` with `add_animation` plus six `set_bone_key`
-   operations, saved to `output/test.rigby` with `overwrite: true`, so the input file is
-   left untouched and the project is loaded and saved once.
+   operations, saved to the output with `overwrite: true`, so the input file is left
+   untouched and the project is loaded and saved once.
 5. **Verify** — `describe_animation` for the key times, `sample_pose` for the resulting
    hand positions, and `validate_project` for project health.
+
+### Reusing the client
+
+```python
+import rigby2d_mcp_utils as mcp
+
+with mcp.RunLog(mcp.LOG_DIR) as log:
+    with mcp.connect(log) as client:
+        info = client.call_tool("inspect_project", {"path": "input/test.rigby"})
+        log.info(f"{info['name']}: {info['counts']['bones']} bones")
+```
+
+`RigbyMcpClient` exposes `initialize`, `list_tools`, `call_tool`, `request`, `notify`
+and `close`, and works as a context manager.
 
 Key values are **relative to the setup pose**, in degrees, with **Y up**. The arms are
 keyed on `upperarm_l` (+130°) and `upperarm_r` (−130°). The hand IK constraints exist but
@@ -151,7 +187,7 @@ their `mix` is `0`, so the IK targets do not drive the arms; see
 ## Restoring the original project
 
 `_INFO/backups/test.pristine.rigby` is the project as it was received, before any MCP edit.
-The folder `_INFO/backups/` is git-ignored, so nothing there is committed.
+`_INFO/` is git-ignored, so nothing there is committed.
 
 ```powershell
 Copy-Item _INFO\backups\test.pristine.rigby input\test.rigby -Force
@@ -168,10 +204,12 @@ commit is the only step left:
 git commit -m "Initial commit: Rigby2D MCP sandbox"
 ```
 
-`.gitignore` keeps `node_modules/`, `.venv/`, `output/`, `logs/`, `_INFO/backups/`,
-`_INFO/reference-src/`, `_preview/` and `*.mcpb` out of the repository. `.gitattributes`
-normalizes text to LF (Windows `.bat` files stay CRLF) but leaves `.rigby` files without
-end-of-line conversion, because the editor and the MCP tools save them byte for byte.
+`.gitignore` keeps the local and generated folders out of the repository: `input/`, `output/`,
+`logs/`, `_INFO/`, `node_modules/`, `.venv/`, `_preview/` and `*.mcpb`. A fresh clone therefore
+needs `input/test.rigby` and `_tools/mcp-server/node_modules` restored locally.
+`.gitattributes` normalizes text to LF (Windows `.bat` files stay CRLF) but leaves `.rigby`
+files without end-of-line conversion, because the editor and the MCP tools save them byte
+for byte.
 
 ---
 
