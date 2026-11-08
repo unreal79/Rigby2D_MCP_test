@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# Node.js
+# Installed by `npm install` inside _tools/mcp-server (ag-psd, pyodide, ...).
+# ---------------------------------------------------------------------------
+node_modules/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------------------------------------------------------------------------
+# Local artifacts
+# The script reads input/ and writes output/test.rigby plus one log per run.
+# input/ is the tracked source; output/ and logs/ are generated.
+# ---------------------------------------------------------------------------
+input/
+output/
+logs/
+_INFO/
+_preview/
+*.backup.rigby
+*.log
+
+# Packaged Claude Desktop extension (about 7 MB): rebuild or re-download it,
+# see README.md. The unpacked server in _tools/mcp-server is what we run.
+*.mcpb
+
+# ---------------------------------------------------------------------------
+# Editors and operating systems
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
