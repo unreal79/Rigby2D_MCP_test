@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "rigby2d": {
+      "command": "node",
+      "args": [
+        "D:\\gamedev\\Rigby2D_x64_portable\\Projects\\rigby_mcp_test\\_tools\\mcp-server\\src\\mcp\\server.js",
+        "--root",
+        "D:\\gamedev\\Rigby2D_x64_portable\\Projects\\rigby_mcp_test"
+      ]
+    }
+  }
+}
