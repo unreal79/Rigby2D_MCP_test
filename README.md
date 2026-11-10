@@ -6,8 +6,9 @@ your own code through the Rigby2D's [Model Context Protocol (MCP)](https://rigby
 It contains a sample Rigby2D character project, a ready-to-run copy of the Rigby2D MCP
 server (Node.js), and a Python demo client that edits the character's animation.
 
-```
+```text
 add_arms_up.py      ->  spawns MCP server (stdio)  ->  input/test.rigby -> output/test.rigby
+add_dance.py        ->  same client               ->  input/human.rigby -> output/human.rigby
 rigby2d_mcp_utils.py       (shared client, logging, paths)   + logs/run-<timestamp>.log
 ```
 
@@ -18,14 +19,17 @@ rigby2d_mcp_utils.py       (shared client, logging, paths)   + logs/run-<timesta
 | Path | What it is |
 | --- | --- |
 | `add_arms_up.py` | Demo script. Reads the input project, adds an `arms_up` animation (arms rise, then lower) and writes the output project. |
+| `add_dance.py` | Demo script. Builds a 20-second `dance` for the stick figure in `input/human.rigby`: groove, overhead waves, side steps, then a full side split at the end. |
 | `rigby2d_mcp_utils.py` | Reusable MCP client: process launch, JSON-RPC transport, Node.js and server discovery, path validation, `RunLog`. Import it from any new script. |
 | `run_add_animation.bat` | Convenience wrapper that sets the environment the script needs and runs it. |
 | `input/test.rigby` | Local, git-ignored. Sample character work file ("NILA"): 39 bones, 42 slots, 1 skin, 10 constraints, animations `idle` and `arms_up`. The script never modifies it. |
+| `input/human.rigby` | Local, git-ignored. Simple 7-bone stick figure used by the dance demo. The script never modifies it. |
 | `output/` | Local, git-ignored. Generated: the edited project. Recreated on every run. |
 | `logs/` | Local, git-ignored. Generated: one `run-<timestamp>.log` per run, with the steps, arguments and errors. |
 | `_tools/mcp-server/` | The Rigby2D MCP server, unpacked from `Rigby2D-AI.mcpb`. Self-contained: own `src/` and `node_modules/`. |
 | `_tools/start_mcpServer.bat` | Windows launcher for the server with `--root` set to this repository. |
-| `_INFO/` | Local, git-ignored. Reference material, not used at runtime: upstream sources and docs (`rigby2d-develop/`), the packaged `.mcpb`, the extension manifest, third-party notices, the original project as received (`backups/`), and a legacy unpacked server copy (`reference-src/`). |
+| `_tools/rigby2d-develop/` | The Rigby2D development folder, unpacked from `Rigby2D-AI.mcpb`. Contains its own `src/` and `node_modules/`. |
+| `_INFO/` | Local, git-ignored. Reference material, the packaged `.mcpb`, the extension manifest, third-party notices, the original project as received (`backups/`), and a legacy unpacked server copy (`reference-src/`). |
 
 The repository tracks the code and the server: the project data (`input/`, `output/`, `logs/`)
 and the reference material (`_INFO/`) stay on your machine.
@@ -64,7 +68,7 @@ python add_arms_up.py --help
 
 Expected output (world-space hand positions, Y up):
 
-```
+```text
 t=0 s, arms down:       hand_l=(541.0, 1409.2)
 t=0.8 s, arms up:       hand_l=(297.2, 2400.5)
 t=1.6 s, arms down again: hand_l=(541.0, 1409.2)
@@ -75,6 +79,24 @@ so running it twice gives the same output. The input file is only read.
 
 `input/` must contain the project. `output/` and `logs/` are created when missing
 (the MCP server itself only writes into folders that already exist).
+
+### Dance demo
+
+`input/human.rigby` is a simple stick figure with seven bones. The dance script uses
+the same client and takes the same arguments:
+
+```powershell
+python add_dance.py                       # input/human.rigby -> output/human.rigby
+python add_dance.py input/human.rigby build/human.rigby
+```
+
+It creates a 20-second `dance` animation: a relaxed groove, arms waving overhead,
+side steps with alternate leg lifts, a wind-down, and a full side split that is held
+at the end. The motion is generated from smooth section poses that are cross-faded
+and sampled at 20 keys per second, so the body never stops dead or snaps between
+moves. The feet are counter-rotated while the pelvis sways, which reads as a weight
+shift instead of a slide. The input file is only read; the animation is written to
+`output/human.rigby`.
 
 ### Logs
 
@@ -179,4 +201,4 @@ their `mix` is `0`, so the IK targets do not drive the arms; see
 ## License and credits
 
 Rigby2D and its MCP server are by the Rigby2D project; see
-`_INFO/THIRD_PARTY_NOTICES.md` and `_INFO/rigby2d-develop/README.md`.
+`_tools/THIRD_PARTY_NOTICES.md` and `_tools/rigby2d-develop/README.md`.

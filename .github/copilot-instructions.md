@@ -130,7 +130,7 @@ A correct run prints hand positions that rise at `t=0.8` and return at `t=1.6`, 
 
 Authoritative references, generated from the server itself:
 
-- `_INFO/rigby2d-develop/docs/mcp.md` — setup, tools by task, conventions, security, protocol.
-- `_INFO/rigby2d-develop/docs/mcp-tools.md` — every tool with all parameters.
-- `_INFO/rigby2d-develop/docs/scripting.md` — the `import rigby` API used by `run_script`
+- `_tools/rigby2d-develop/docs/mcp.md` — setup, tools by task, conventions, security, protocol.
+- `_tools/rigby2d-develop/docs/mcp-tools.md` — every tool with all parameters.
+- `_tools/rigby2d-develop/docs/scripting.md` — the `import rigby` API used by `run_script`
   and by the editor's script editor.
