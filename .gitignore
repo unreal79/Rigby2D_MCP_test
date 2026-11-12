@@ -18,9 +18,12 @@ __pycache__/
 # ---------------------------------------------------------------------------
 # Local artifacts
 # The script reads input/ and writes output/test.rigby plus one log per run.
-# input/ is the tracked source; output/ and logs/ are generated.
+# input/ contents stay local except the sample project; output/ and logs/
+# are generated. Ignore the directory contents, not the directory itself:
+# a negated file pattern cannot re-include a file inside an ignored folder.
 # ---------------------------------------------------------------------------
-input/
+input/*
+!input/human.rigby
 output/
 logs/
 _INFO/

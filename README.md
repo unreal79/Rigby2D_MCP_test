@@ -29,10 +29,9 @@ rigby2d_mcp_utils.py       (shared client, logging, paths)   + logs/run-<timesta
 | `_tools/mcp-server/` | The Rigby2D MCP server, unpacked from `Rigby2D-AI.mcpb`. Self-contained: own `src/` and `node_modules/`. |
 | `_tools/start_mcpServer.bat` | Windows launcher for the server with `--root` set to this repository. |
 | `_tools/rigby2d-develop/` | The Rigby2D development folder, unpacked from `Rigby2D-AI.mcpb`. Contains its own `src/` and `node_modules/`. |
-| `_INFO/` | Local, git-ignored. Reference material, the packaged `.mcpb`, the extension manifest, third-party notices, the original project as received (`backups/`), and a legacy unpacked server copy (`reference-src/`). |
 
 The repository tracks the code and the server: the project data (`input/`, `output/`, `logs/`)
-and the reference material (`_INFO/`) stay on your machine.
+and the reference material (`_tools/rigby2d-develop/docs`) stay on your machine.
 
 ---
 
