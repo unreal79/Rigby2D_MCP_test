@@ -8,13 +8,13 @@ their own windows.
 
 | | Area | What it is for |
 | --- | --- | --- |
-| 1 | **Menu bar** | *File* (with *New*, *Open recent*, *Import* and *Export* submenus), *Edit*, *View*, *Scripts* and *Help* (see [The Help menu](#the-help-menu)), and the **SETUP / ANIMATE** mode button. When an update is ready, an **Update available** button appears here too. |
+| 1 | **Menu bar** | *File* (with *New*, *Open recent*, *Import* and *Export* submenus), *Edit*, *View*, *Scripts* and *Help* (see [The Help menu](#the-help-menu)), the **SETUP** and **ANIMATE** mode tabs, and buttons for *Undo*, *Redo*, *Fit the skeleton in view* and *Show or hide bones* (hover one to see its shortcut). When an update is ready, an **Update available** button appears here too. |
 | 2 | **Workspace switch** | **Game** or **Film**: which tools are shown. See [Workspaces](#workspaces). |
 | 3 | **Viewport toolbar** | Transform tools, the active tool's values with a key button, axes, onion skin, guides and auto key. |
 | 4 | **Viewport** | The character. Select, pose and edit here. |
 | 5 | **Tree** | The skeleton (bones, slots, attachments) and the draw order, skins, constraints, events, animations and images. |
-| 6 | **Inspector** | Properties of the selection: a bone, slot, constraint, skin or event, or the project when nothing is selected. Poses and face controls sit at the bottom. |
-| 7 | **Timeline controls** | Animation list, **+ New**, length, playback, loop, speed, the time display and **Key**. |
+| 6 | **Inspector** | Properties of the selection (a bone, slot, constraint, skin or event) and, on its **Project** tab, the project settings. Poses and face controls sit at the bottom. |
+| 7 | **Timeline controls** | Animation list, **+** (new animation), length, playback, loop, speed, the time display and **Key**. |
 | 8 | **Dopesheet / Graph** | Keys over time, or their curves. |
 | 9 | **Status bar** | Messages, rig statistics and zoom, and the **Log** button. |
 
@@ -27,10 +27,11 @@ Every edit means one of two things, chosen by the mode:
 | Changes | The **setup pose**: the rig at rest. | **Keys** at the current frame of the current animation. |
 | Bones | Create, delete, reparent, set length. | Pose them. |
 | Images and meshes | Place them, edit vertices, paint weights. | Swap images, deform meshes (deform keys). |
-| Viewport border | None | Red |
+| Mode tab | **SETUP** lit blue | **ANIMATE** glows orange |
+| Timeline | Hidden, so the viewport gets the room (*View ▸ Timeline in Setup mode* keeps it) | Shown |
 
-Switch with <kbd>Tab</kbd> or the mode button in the menu bar. The same transform tools work in
-both modes; only the result differs.
+Switch with <kbd>Tab</kbd> or by clicking the other tab in the menu bar. The same transform tools
+work in both modes; only the result differs.
 
 ## Viewport
 
@@ -42,7 +43,7 @@ both modes; only the result differs.
 | Transform the selection | Drag it with the active tool, or drag empty space while bones are selected. |
 | Pan | Right or middle drag. |
 | Zoom | Mouse wheel. |
-| Fit the skeleton in view | *View ▸ Fit the skeleton in view* (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>). |
+| Fit the skeleton in view | The fit button in the menu bar, or *View ▸ Fit the skeleton in view* (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>). |
 | Deselect | <kbd>Esc</kbd>, or click empty space. |
 
 Hovering a bone — in the viewport, the tree or a timeline track — highlights it in all three at
@@ -58,7 +59,7 @@ panel windows). The selection is shown the same way.
 | **Pose** | <kbd>B</kbd> | Drag a bone to aim it at the cursor; drag near its origin to move it. The quickest way to pose. |
 | **Create** | <kbd>N</kbd> | Drag to draw a bone (Setup mode). Select a bone first to chain the new one from it. |
 | **Rotate** | <kbd>C</kbd> | Rotates the selection. |
-| **Translate** | <kbd>V</kbd> | Moves the selection. |
+| **Translate** | <kbd>V</kbd> | Moves the selection. Hold <kbd>Shift</kbd> while dragging to move along one axis only. |
 | **Scale** | <kbd>X</kbd> | Scales the selection. |
 | **Shear** | <kbd>Z</kbd> | Shears the selection. |
 
@@ -77,17 +78,32 @@ direction the Translate tool moves.
 
 ### View options
 
-The *View* menu has *Show bones*, *Show output frame* (Film workspace), the **Log** window, *Window
-layouts* (desktop app), zoom commands, the renderer (*Draw with WebGL* or *Canvas 2D*) and the
-shortcut presets.
+The *View* menu chooses what is drawn over the art:
+
+- *Show bones*, *Show clipping masks*, *Show bounding boxes*, *Show paths* and *Show points*, one
+  switch per kind (remembered between sessions). A shape you select stays visible even when its kind
+  is hidden, so you can still edit it. The bone button in the menu bar and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>
+  also show or hide bones.
+- *Show output frame* (Film workspace).
+- **Hide overlays** (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>, or <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>Z</kbd>
+  with the Blender-like shortcuts) hides bones, shapes, selection outlines and guides at once, to
+  watch the animation as it renders. Press it again to bring them back.
+- *Timeline in Setup mode* keeps the timeline on screen in Setup mode.
+
+It also has the **Log** window, *Window layouts* (desktop app) and zoom commands. The viewport
+renderer and the shortcut preset are in [Preferences](preferences.md) (*Interface*).
 
 ## Tree
 
 The tree has collapsible sections:
 
-- **Skeleton**: bones in their hierarchy, each with its slots and their attachments. Click a slot's
-  attachment to show it (in Animate mode, that sets an image-swap key). **+ Bone** adds a child to
-  the selected bone.
+- **Skeleton**: bones in their hierarchy, each with its slots. A slot shows its visible attachment
+  next to its name; click **▸** (with the number of attachments) to list them all, and click one to
+  show it (in Animate mode, that sets an image-swap key). **+ Bone** adds a child to the selected
+  bone, as long as its parent, and **+ Point** a [point bone](bones-and-slots.md#point-bones) at its
+  tip. The **Find** box at the top shows only the bones and slots whose names contain what you type
+  (with the bones above them), and Esc clears it. In Setup mode, drag a bone's row onto another bone
+  to make that its parent, or onto the skeleton's title for the root; the bone keeps its place.
 - **Draw order**: slots back to front; *Draw in front* and *Draw behind* move the selected slot, or
   drag a row to drop it anywhere (a side preview shows its image between its new neighbours as you
   drag). See [Draw order](bones-and-slots.md#draw-order).
@@ -102,8 +118,10 @@ See [Onion skin](onion-skin.md).
 
 The inspector shows what is selected:
 
-- **Nothing**: the **Project**: name, texture filtering (smooth or pixel art), frame rate, the
-  **Output** section in the Film workspace, rig statistics, images and audio tracks.
+- **Nothing**: the **Project**: name, texture filtering (smooth or pixel art), the
+  [pixel grid](importing-art.md#pixel-grid), the **Output** section in the Film workspace, rig
+  statistics, images and audio tracks. With something selected, the same settings are on the
+  inspector's **Project** tab (the selection stays; selecting something else goes back to it).
 - **A bone**: name, parent, length, inheritance, and its pose at the current frame.
 - **A slot**: its attachments, color and blending, and the selected attachment's settings.
 - **A constraint, skin or event**: every setting of it.
@@ -112,10 +130,13 @@ At the bottom, **Poses & face controls** is always there. See [Poses and face co
 
 ## Timeline
 
-The timeline row holds the animation menu, **+ New**, the animation's name and **Length**, a delete
-button, playback (start, previous frame, play, next frame), **Loop**, playback speed, the time (frames
-and seconds, or timecode in the Film workspace) and **◆ Key**. **Dopesheet** and **Graph** switch
-the view below. See [Animating](animating.md) and [Graph editor](graph-editor.md).
+The timeline row holds the animation menu, **+** (new animation), the animation's name and **Length**, a delete
+button, playback (start, previous frame, play, next frame), **Loop**, **Boomerang**, playback speed,
+the project's **frame rate**, **Key**, the key tools, **Dopesheet** and **Graph** (which switch
+the view below), and last the time: frame and seconds, or timecode and frame in the Film workspace.
+On a narrow window the timeline row and the viewport toolbar keep every button but hide their labels;
+hover a button for its name and shortcut.
+See [Animating](animating.md) and [Graph editor](graph-editor.md).
 
 ## Workspaces
 
@@ -124,7 +145,7 @@ the view below. See [Animating](animating.md) and [Graph editor](graph-editor.md
 | For | Game engines and apps | Film, video, motion graphics |
 | Output | Skeleton JSON / `.skel` + atlas | PNG sequences, WebM, MP4 (exports stay available) |
 | New projects | 30 fps | 24 fps |
-| Time display | Frames and seconds | Timecode `HH:MM:SS:FF` and frames |
+| Time display | Frames and seconds | Timecode `MM:SS:FF` and frames (hours appear past one hour) |
 | Output settings, output frame, *Render animation* | Hidden | Shown |
 | Audio tracks, lip-sync, face controls | Hidden | Shown |
 

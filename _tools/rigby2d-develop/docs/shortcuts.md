@@ -1,9 +1,9 @@
 # Keyboard shortcuts
 
-Rigby2D has two shortcut presets, and you can make your own. Choose one at the bottom of the *View* menu
-or in *Preferences ▸ Interface*;
+Rigby2D has two shortcut presets, and you can make your own. Choose one in *Preferences ▸ Interface*;
 *Help ▸ Keyboard shortcuts* lists the keys of the active preset, with a search box and the preset
-switch. On macOS, <kbd>Ctrl</kbd> also works as <kbd>Cmd</kbd>.
+switch. On macOS, <kbd>Ctrl</kbd> also works as <kbd>Cmd</kbd>. Buttons show their shortcut in the
+tooltip when you hover them, in the keys of the active preset.
 
 - **Spine-like** (default): the keys Spine animators know, with tools and playback on the left hand (B, N, C, V, X, Z; Q, W, E, A, S, D,
   R, F), as in common 2D animation tools.
@@ -63,6 +63,9 @@ This table is generated from the editor's keymap, so it always matches the curre
 | Deselect | <kbd>Esc</kbd> | <kbd>Alt</kbd>+<kbd>A</kbd> or <kbd>Esc</kbd> |
 | Fit the skeleton in view | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> | <kbd>F</kbd> or <kbd>Home</kbd> |
 | Zoom to 100% | <kbd>Ctrl</kbd>+<kbd>F</kbd> | <kbd>Ctrl</kbd>+<kbd>F</kbd> |
+| Hide or show overlays | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>Z</kbd> |
+| Show or hide bones | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> |
+| Cut selected keys | <kbd>Ctrl</kbd>+<kbd>X</kbd> | <kbd>Ctrl</kbd>+<kbd>X</kbd> |
 | Copy selected keys | <kbd>Ctrl</kbd>+<kbd>C</kbd> | <kbd>Ctrl</kbd>+<kbd>C</kbd> |
 | Paste keys at the playhead | <kbd>Ctrl</kbd>+<kbd>V</kbd> | <kbd>Ctrl</kbd>+<kbd>V</kbd> |
 | Delete selected key, bone or slot | <kbd>Delete</kbd> or <kbd>Backspace</kbd> | <kbd>Delete</kbd> or <kbd>Backspace</kbd> |
@@ -89,7 +92,8 @@ This table is generated from the editor's keymap, so it always matches the curre
 | Dopesheet | Click / <kbd>Ctrl</kbd>+click / drag a box | Select keys. |
 | Dopesheet | Drag a key | Move the selected keys. |
 | Dopesheet | Drag a selection edge in the ruler | Retime the selected keys. |
-| Dopesheet, graph | Right-click a key | Curve presets and delete. |
+| Dopesheet, graph | Right-click a key | Copy, curve presets and delete. |
+| Dopesheet | Right-click anywhere (keys copied) | *Paste here*: paste at that frame. |
 | Graph | Wheel / <kbd>Shift</kbd>+wheel | Zoom / pan values. |
 | Graph | <kbd>Ctrl</kbd>+wheel / <kbd>Alt</kbd>+wheel | Zoom / pan time. |
 | Graph | Double-click | Fit the curves. |

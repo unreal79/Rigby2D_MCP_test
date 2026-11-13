@@ -1,0 +1,232 @@
+{
+  "manifest_version": "0.3",
+  "name": "rigby2d",
+  "display_name": "Rigby2D",
+  "version": "0.5.1",
+  "description": "Let Claude open, rig, animate, check and convert your Rigby2D 2D animation projects.",
+  "long_description": "Connects Claude to your Rigby2D projects (.rigby work files and skeleton .json / .skel exports). Ask Claude to explain a rig, find missing images, add bones and animations, set eased keys, rig a layered PSD with AutoRig, reuse animations on other characters, set up film output, poses, face controls and lip-sync, or run Python scripts. Claude only reads and writes files inside the project folders you choose here.",
+  "author": {
+    "name": "Rigby2D",
+    "url": "https://github.com/jaisurya-dev-art/rigby2d"
+  },
+  "homepage": "https://github.com/jaisurya-dev-art/rigby2d",
+  "documentation": "https://github.com/jaisurya-dev-art/rigby2d/blob/main/docs/mcp.md",
+  "support": "https://github.com/jaisurya-dev-art/rigby2d/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jaisurya-dev-art/rigby2d"
+  },
+  "icon": "icon.png",
+  "license": "MIT OR Apache-2.0",
+  "keywords": [
+    "animation",
+    "2d",
+    "skeletal",
+    "rigging",
+    "game",
+    "film",
+    "rigby2d"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/src/mcp/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/src/mcp/server.js",
+        "${user_config.project_folders}"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "inspect_project",
+      "description": "Summarize a Rigby2D project file: format and version, counts of bones, slots, skins, constraints, events and images, the animations with their durations, and any read warnings."
+    },
+    {
+      "name": "describe_rig",
+      "description": "List the bone hierarchy with setup-pose transforms (Y up, degrees), the slots in draw order with their attachments, and the attachments of each extra skin."
+    },
+    {
+      "name": "describe_animation",
+      "description": "Show one animation: its duration, the key times of every bone, slot, deform, IK and draw-order timeline, its events, and other timelines it holds."
+    },
+    {
+      "name": "sample_pose",
+      "description": "Evaluate the skeleton with the Rigby2D runtime: the setup pose, or an animation at a time."
+    },
+    {
+      "name": "validate_project",
+      "description": "Check a project for problems: structure, images missing from its work file, atlas or images folder, animations without keys, whether skeleton JSON 4.3 round-trips the data exactly, and whether binary .skel export is possible."
+    },
+    {
+      "name": "convert_project",
+      "description": "Write a project as skeleton JSON (format 3.8, 4.2 or 4.3) or binary .skel (4.3)."
+    },
+    {
+      "name": "export_defold_model",
+      "description": "Write a Rigby2D model for Defold from a character (.rigby work file, or .skel / .json with its atlas or images): the skeleton (<name>.rigbyskel), its images unpacked into images/ with a Defold atlas (<name>.atlas), the component (<name>.rigbymodel) and a game object holding it (<name>.go)."
+    },
+    {
+      "name": "export_sprite_sheet",
+      "description": "Render animations frame by frame into a sprite sheet for engines that play frames: 'json' writes <name>.png and <name>.json (a JSON hash as TexturePacker writes it, read by Phaser, PixiJS and others, with Aseprite frameTags, durations and a pivot at the skeleton's origin); 'defold' writes <name>/<animation>_<n>.png frames and <name>.atlas; 'frames' writes the frames only."
+    },
+    {
+      "name": "add_bone",
+      "description": "Add a bone as a child of an existing bone, with its setup pose relative to the parent (x, y, rotation in degrees, length)."
+    },
+    {
+      "name": "set_bone_setup",
+      "description": "Change a bone's setup (rest) pose relative to its parent: x, y, rotation, scaleX, scaleY, shearX, shearY (degrees for angles) and length."
+    },
+    {
+      "name": "add_animation",
+      "description": "Add an empty animation."
+    },
+    {
+      "name": "set_bone_key",
+      "description": "Set a key on a bone in an animation (replacing a key at the same time)."
+    },
+    {
+      "name": "delete_bone_key",
+      "description": "Delete the key of a bone channel at a time in an animation."
+    },
+    {
+      "name": "set_attachment_key",
+      "description": "Show an attachment in a slot from a time on in an animation (an image swap), or hide the slot's attachment with hide: true."
+    },
+    {
+      "name": "set_event_key",
+      "description": "Fire an event at a time in an animation (games receive it during playback)."
+    },
+    {
+      "name": "batch_edit",
+      "description": "Apply many edits in one call, loading and saving the project once, atomically: all of them are saved, or none."
+    },
+    {
+      "name": "set_workspace",
+      "description": "Set the project's workspace: 'game' (for game engines; skeleton exports) or 'film' (for film and video: output settings, renders, face controls, audio)."
+    },
+    {
+      "name": "set_output",
+      "description": "Set the film output: frame rate (presets: 12, 15, 23.976, 24, 25, 29.97, 30, 48, 50, 60; any rate up to 240), size in pixels, background ('transparent' or a #rrggbb color), and framing: 'auto' (fit the animation), 'fixed' (center frame_x, frame_y and frame_scale world units per pixel), or 'camera' (follow a bone named 'camera', created if missing)."
+    },
+    {
+      "name": "save_pose",
+      "description": "Save a pose to the pose library: the local transforms of the given bones (default: every bone) and the attachments their slots show (mouth shapes, eyes)."
+    },
+    {
+      "name": "apply_pose",
+      "description": "Apply a saved pose at an amount (0 to 1; image swaps switch at 0.5)."
+    },
+    {
+      "name": "delete_pose",
+      "description": "Delete a pose from the pose library."
+    },
+    {
+      "name": "add_face_control",
+      "description": "Add a face control: a slider from 0 to 1 that blends from one pose ('from', default the setup pose) to another ('to'), such as brows up, eyes closed or mouth open."
+    },
+    {
+      "name": "set_face_control",
+      "description": "Set a face control to a value (0 to 1)."
+    },
+    {
+      "name": "delete_face_control",
+      "description": "Delete a face control (its poses stay in the library)."
+    },
+    {
+      "name": "add_audio_track",
+      "description": "Add a sound file (.wav, .mp3, .ogg, .m4a, .aac, .flac) as an audio track of an animation, starting at 'offset' seconds."
+    },
+    {
+      "name": "set_audio_track",
+      "description": "Change an audio track's start time (offset, seconds) or volume."
+    },
+    {
+      "name": "remove_audio_track",
+      "description": "Remove an audio track from an animation."
+    },
+    {
+      "name": "lip_sync",
+      "description": "Lip-sync an animation to one of its audio tracks."
+    },
+    {
+      "name": "rename_bone",
+      "description": "Rename a bone."
+    },
+    {
+      "name": "rename_animation",
+      "description": "Rename an animation."
+    },
+    {
+      "name": "delete_animation",
+      "description": "Delete an animation and its audio tracks."
+    },
+    {
+      "name": "set_slot",
+      "description": "Change a slot's setup: the attachment it shows (or hide: true to show none) and its color (#rrggbb or #rrggbbaa)."
+    },
+    {
+      "name": "detect_parts",
+      "description": "Preview Rigby AutoRig on layered artwork: which body part each layer is (head, torso, upperarm, forearm, hand, arm, thigh, shin, foot, leg, eye, mouth, hair, tail, ...), its side and whether that came from the layer name or its position."
+    },
+    {
+      "name": "autorig",
+      "description": "Rigby AutoRig: rig layered artwork in one step."
+    },
+    {
+      "name": "map_bones",
+      "description": "Preview how retarget_animation matches the bones of a source character to a target character: by name, similar name (\"L_Arm\" and \"arm.l\"), body part (\"UpperArm_Left\" and \"upperarm_l\") or your mapping."
+    },
+    {
+      "name": "retarget_animation",
+      "description": "Copy animations from one character to another (any format): bones are matched automatically (see map_bones; override with mapping), movement is scaled to the target's size (scale 'auto') and rotated into its bones' frames, curves are kept, and slot, event and IK keys follow by name."
+    },
+    {
+      "name": "add_actor",
+      "description": "Put a character (another .rigby work file) into this scene as an actor."
+    },
+    {
+      "name": "add_clip",
+      "description": "Place a clip of an actor's animation on a shot of the scene, NLE-style: from 'start' it plays the animation between 'in' and 'out' at 'speed', 'loops' times, crossfading from the actor's previous clip over 'blend' seconds; after it ends the actor holds the last frame until its next clip."
+    },
+    {
+      "name": "remove_clip",
+      "description": "Remove an actor's clip that starts at 'start' (seconds) on a shot."
+    },
+    {
+      "name": "set_actor",
+      "description": "Change an actor: its setup position, size, facing, skin or name."
+    },
+    {
+      "name": "set_layer_depth",
+      "description": "Set the depth of a top-level stage bone (a background or foreground layer) for parallax: when the 'camera' bone moves, a layer at depth z keeps up with focal / (focal + z) of the motion (focal 1000 by default), keeping its drawn size."
+    },
+    {
+      "name": "run_script",
+      "description": "Run a Python script against a project with the Rigby2D scripting API (`import rigby`: bones, slots, animations, keys, selection, time; see https://rigby2d.com/docs/scripting.html), then save the project."
+    }
+  ],
+  "user_config": {
+    "project_folders": {
+      "type": "directory",
+      "title": "Project folders",
+      "description": "The folders with your Rigby2D projects. Claude can only open and change files inside them.",
+      "multiple": true,
+      "required": true,
+      "default": [
+        "${DOCUMENTS}"
+      ]
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "win32",
+      "darwin"
+    ],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}

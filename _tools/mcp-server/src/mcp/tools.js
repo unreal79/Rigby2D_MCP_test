@@ -14,6 +14,7 @@ import { Pose } from '../core/pose.js';
 import { atlasLookup, imageLookup } from '../core/draw.js';
 import { usedImages } from '../editor/io.js';
 import { FORMATS as SHEET_FORMATS, buildSpriteSheet } from '../editor/spritesheet.js';
+import { defoldFolderOf, defoldModelFiles, unpackAtlas } from '../editor/defold.js';
 import { unzip } from '../editor/zip.js';
 import { filmSummary } from './film.js';
 import { sceneSummary } from './scene.js';
@@ -455,6 +456,64 @@ async function convert(ws, { input, output, version = '4.3', overwrite = false }
   };
 }
 
+// ---- Defold game objects ----------------------------------------------------------------------
+
+async function defoldModel(ws, { input, output_folder, name, folder, animation = '', skin = '', overwrite = false }) {
+  const source = await ws.existing(input);
+  const p = await loadProject(source);
+  if (p.doc.scene) throw new ToolError('A Defold model is made from a character, not a scene: pass the character file.');
+  const outDir = output_folder ? await ws.existing(output_folder) : path.dirname(source);
+  if (!(await fs.stat(outDir)).isDirectory()) throw new ToolError(`${output_folder} is not a folder.`);
+  const base = name || path.basename(source, path.extname(source));
+  // The folder's path in the Defold project: given, or found from the game.project above it (inside the workspace).
+  let projectFolder = folder ?? null;
+  if (!projectFolder) {
+    projectFolder = await defoldFolderOf(outDir, async (root) => ws.inside(path.resolve(root)) && fs.stat(path.join(root, 'game.project')).then(() => true, () => false));
+    if (!projectFolder) throw new ToolError('No game.project found in the output folder or above it. Pass folder: the output folder path in the Defold project, such as "/assets/hero".');
+  }
+  if (!projectFolder.startsWith('/')) throw new ToolError('folder is a path in the Defold project and starts with "/", such as "/assets/hero".');
+  if (animation && !p.doc.animations.some((a) => a.name === animation)) throw new ToolError(`No animation '${animation}'. The skeleton has: ${p.doc.animations.map((a) => a.name).join(', ') || 'none'}.`);
+  if (skin && skin !== 'default' && !p.doc.skins.some((s) => s.name === skin)) throw new ToolError(`No skin '${skin}'.`);
+  // The images, as PNG bytes: from the work file, an images folder, or unpacked from the atlas.
+  const used = new Set(usedImages(p.doc));
+  const images = new Map();
+  const dir = path.dirname(source);
+  if (p.format === 'rigby') {
+    for (const n of used) if (p.entries.has(`images/${n}.png`)) images.set(n, { bytes: p.entries.get(`images/${n}.png`) });
+  } else if (p.imageSource?.startsWith('atlas ')) {
+    const atlas = parseAtlas(await fs.readFile(path.join(dir, p.imageSource.slice(6)), 'utf8'));
+    const pages = new Map();
+    for (const page of atlas.pages) pages.set(page.name, decodePng(await fs.readFile(path.join(dir, page.name))));
+    for (const [n, picture] of unpackAtlas(atlas, pages)) if (used.has(n)) images.set(n, picture);
+  } else if (p.imageSource?.startsWith('folder ')) {
+    const imagesDir = path.join(dir, p.imageSource.slice(7));
+    for (const n of used) {
+      const bytes = await fs.readFile(path.join(imagesDir, `${n}.png`)).catch(() => null);
+      if (bytes) images.set(n, { bytes });
+    }
+  }
+  const missing = [...used].filter((n) => !images.has(n));
+  const files = defoldModelFiles({ doc: p.doc, images, name: base, folder: projectFolder, animation, skin });
+  const targets = [];
+  for (const f of files) {
+    const target = path.join(outDir, f.path);
+    if (!ws.inside(target)) throw new ToolError(`Access denied: ${target} is outside the workspace.`);
+    if (!overwrite && (await fs.stat(target).then(() => true, () => false))) throw new ToolError(`${f.path} already exists. Pass overwrite: true to replace it.`);
+    targets.push([target, f.png ? (f.png.bytes ?? encodePng({ width: f.png.width, height: f.png.height, data: f.png.rgba })) : (f.bytes ?? f.text)]);
+  }
+  await fs.mkdir(path.join(outDir, 'images'), { recursive: true });
+  for (const [target, data] of targets) await fs.writeFile(target, data);
+  return {
+    model: path.join(outDir, `${base}.rigbymodel`),
+    gameObject: path.join(outDir, `${base}.go`),
+    folder: projectFolder,
+    files: files.map((f) => f.path),
+    images: images.size,
+    missingImages: missing,
+    note: `Add ${projectFolder}/${base}.go to a collection (or ${projectFolder}/${base}.rigbymodel to a game object): the Defold editor plays it in the scene view, and the game plays it. The project needs the rigby2d library.`,
+  };
+}
+
 // ---- sprite sheets ----------------------------------------------------------------------------
 
 /** Image lookup for a loaded project: the work file's images, or the export's atlas or images folder. */
@@ -616,6 +675,27 @@ export function createTools(ws) {
       },
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
       handler: (args) => convert(ws, args),
+    },
+    {
+      name: 'export_defold_model',
+      title: 'Export Defold model',
+      description: "Write a Rigby2D model for Defold from a character (.rigby work file, or .skel / .json with its atlas or images): the skeleton (<name>.rigbyskel), its images unpacked into images/ with a Defold atlas (<name>.atlas), the component (<name>.rigbymodel) and a game object holding it (<name>.go). With the rigby2d library, the Defold editor plays the model live in the scene view and the game plays it natively. The output folder path in the Defold project is found from the game.project above it, or given as folder.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          input: PATH,
+          output_folder: { type: 'string', description: 'Folder to write into, inside the workspace (default: the input file folder). Created files go here and in its images/ subfolder.' },
+          name: { type: 'string', description: 'Base name of the files (default: the input file name).' },
+          folder: { type: 'string', description: 'The output folder path in the Defold project, such as "/assets/hero" (default: found from game.project).' },
+          animation: { type: 'string', description: 'Animation the model plays from the start (its default_animation; default none).' },
+          skin: { type: 'string', description: 'Skin to show (default: the default skin).' },
+          overwrite: { type: 'boolean', description: 'Replace files from an earlier export (default false).' },
+        },
+        required: ['input'],
+        additionalProperties: false,
+      },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+      handler: (args) => defoldModel(ws, args),
     },
     {
       name: 'export_sprite_sheet',

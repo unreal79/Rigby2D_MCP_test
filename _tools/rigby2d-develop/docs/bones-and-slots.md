@@ -15,18 +15,36 @@ Bones are created in **Setup mode**:
 - Pick the **Create** tool (<kbd>N</kbd>) and drag in the viewport: the bone starts where you press
   and points where you release. It becomes a child of the selected bone (the root when nothing is
   selected), and is selected itself, so the next drag continues the chain.
-- **+ Bone** in the tree adds a child to the selected bone.
+- **Click** without dragging to add a **point bone** there (see below).
+- **+ Bone** in the tree adds a child to the selected bone, and **+ Point** a point bone at its tip.
 
 Every project has a `root` bone at the origin. <kbd>Delete</kbd> removes the selected bone together
 with its children.
+
+### Point bones
+
+A point bone has a length of 0: a pivot or anchor, such as a shoulder joint, a hip origin, a prop
+attachment point or a common parent for several limbs.
+
+![A rig with point bones for the hip, a shoulder and a prop anchor; the selected hip shows its rotate handle, and the tree marks point bones with a ring](images/point-bones.png "Point bones: the hip (selected, with its rotate handle), a shoulder and a prop anchor")
+
+It has a position, rotation and scale like any
+bone, can be the parent of regular bones and can bind mesh vertices. In the viewport it is a small
+ring with a crosshair, the same size at any zoom, and a tick showing its rotation; the bone tree marks
+it with ◉.
+
+To turn a selected point bone, drag the round handle at the end of its dotted line (it works with any
+transform tool), or use the Rotate tool. Setting a bone's **Length** to 0 turns it into a point bone,
+and a length above 0 turns it back; children don't move, since length is visual only.
 
 ### Bone settings
 
 | Setting | Meaning |
 | --- | --- |
 | **Name** | Unique name. Animations and runtimes refer to bones by name. |
-| **Parent** | The bone it hangs from. Changing it keeps the bone where it is in the world. |
-| **Length** | Visual length, and the reach used by IK and some constraints. |
+| **Parent** | The bone it hangs from. Changing it keeps the bone where it is in the world. You can also drag the bone's row in the tree onto its new parent (or onto the skeleton's title for the root). |
+| **Length** | Visual length, and the reach used by IK and some constraints. 0 makes a [point bone](#point-bones). |
+| **Color** | The bone's color in the viewport, to tell limbs or sides apart (applies to every selected bone; **×** goes back to the default). Saved in the skeleton file, as in Spine. |
 | **Inherit** | What it takes from its parent: `normal` (everything), `onlyTranslation`, `noRotationOrReflection`, `noScale` or `noScaleOrReflection`. Use `noScale` for parts that should not stretch when the parent does. |
 | **Setup pose** / **Pose at current frame** | Position, rotation, scale and shear relative to the parent: the setup pose in Setup mode, the animated pose (with key buttons) in Animate mode. |
 
@@ -68,13 +86,13 @@ files are kept and exported).
 
 | Type | What it is | Create it with |
 | --- | --- | --- |
-| **Image** (region) | A bitmap placed on the slot's bone. | Import, or **＋ Add image to this slot…** |
-| **Mesh** | An image with vertices that can bend, bound to one or more bones with weights. | **▦ Convert to mesh** on an image. See [Meshes](meshes.md). |
-| **Linked mesh** | Another image sharing a mesh's shape and weights (and optionally its deform keys). | **＋ Linked mesh with image…** on a mesh. |
-| **Bounding box** | A polygon for hit testing in games. | **＋ Add shape… ▸ Bounding box** |
-| **Clipping** | A polygon that masks the slots drawn after it, up to **Clip until**. | **＋ Add shape… ▸ Clipping** |
-| **Path** | A curve other bones can follow with a [path constraint](constraints.md#path). Options: *Closed*, *Constant speed*. | **＋ Add shape… ▸ Path** |
-| **Point** | A position and rotation, for spawning effects or attaching items in a game. | **＋ Add shape… ▸ Point** |
+| **Image** (region) | A bitmap placed on the slot's bone. | Import, or **Add image to this slot…** |
+| **Mesh** | An image with vertices that can bend, bound to one or more bones with weights. | **Convert to mesh** on an image. See [Meshes](meshes.md). |
+| **Linked mesh** | Another image sharing a mesh's shape and weights (and optionally its deform keys). | **Linked mesh with image…** on a mesh. |
+| **Bounding box** | A polygon for hit testing in games. | **Add shape… ▸ Bounding box** |
+| **Clipping** | A polygon that masks the slots drawn after it, up to **Clip until**. | **Add shape… ▸ Clipping** |
+| **Path** | A curve other bones can follow with a [path constraint](constraints.md#path). Options: *Closed*, *Constant speed*. | **Add shape… ▸ Path** |
+| **Point** | A position and rotation, for spawning effects or attaching items in a game. | **Add shape… ▸ Point** |
 
 ### Placing images
 
@@ -88,15 +106,17 @@ can also drag the image with the Translate, Rotate and Scale tools.
 
 ### Editing shapes
 
-For bounding boxes, clipping polygons and paths, **✎ Edit shape** edits the vertices in the
+For bounding boxes, clipping polygons and paths, **Edit shape** edits the vertices in the
 viewport: drag vertices, click near an edge to add one, and press <kbd>Delete</kbd> to remove the
 selected one. Path points have Bézier handles (<kbd>Alt</kbd>+drag moves one handle on its own).
-**✓ Done editing** finishes.
+**Finish editing** finishes.
 
 ## Image sequences
 
 A mesh can play numbered images (`flame01`, `flame02`, …) one after another, for flipbook effects
-such as fire, smoke and blinking lights. Tick **Image sequence** in Setup mode and set:
+such as fire, smoke and blinking lights. Tick **Image sequence** in Setup mode. When the image is
+already one of the numbered frames (`guy-01`), the base name (`guy-`), start, digits and frame count
+are read from the images you imported. Otherwise set:
 
 | Setting | Meaning |
 | --- | --- |

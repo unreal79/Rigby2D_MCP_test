@@ -9,7 +9,7 @@ root folders. Editing tools save the file in its own format, or a copy when `out
 
 <!-- generated:mcp-tools -->
 
-The server has **41 tools**. Parameters marked **required** must be given; the others are optional.
+The server has **42 tools**. Parameters marked **required** must be given; the others are optional.
 
 ### `inspect_project`
 
@@ -65,6 +65,20 @@ Write a project as skeleton JSON (format 3.8, 4.2 or 4.3) or binary .skel (4.3).
 | `output` **required** | string | Output file ending in .json or .skel, inside the workspace. Its folder must exist. |
 | `version` | `'3.8'`, `'4.2'`, `'4.3'` | Skeleton JSON format version (default 4.3; .skel is always 4.3). |
 | `overwrite` | boolean | Replace the output file if it exists (default false). |
+
+### `export_defold_model`
+
+Write a Rigby2D model for Defold from a character (.rigby work file, or .skel / .json with its atlas or images): the skeleton (<name>.rigbyskel), its images unpacked into images/ with a Defold atlas (<name>.atlas), the component (<name>.rigbymodel) and a game object holding it (<name>.go). With the rigby2d library, the Defold editor plays the model live in the scene view and the game plays it natively. The output folder path in the Defold project is found from the game.project above it, or given as folder.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `input` **required** | string | Project file: a .rigby work file or a skeleton .json / .skel export. Relative paths resolve against the first workspace root. |
+| `output_folder` | string | Folder to write into, inside the workspace (default: the input file folder). Created files go here and in its images/ subfolder. |
+| `name` | string | Base name of the files (default: the input file name). |
+| `folder` | string | The output folder path in the Defold project, such as "/assets/hero" (default: found from game.project). |
+| `animation` | string | Animation the model plays from the start (its default_animation; default none). |
+| `skin` | string | Skin to show (default: the default skin). |
+| `overwrite` | boolean | Replace files from an earlier export (default false). |
 
 ### `export_sprite_sheet`
 
@@ -572,7 +586,7 @@ Set the depth of a top-level stage bone (a background or foreground layer) for p
 
 ### `run_script`
 
-Run a Python script against a project with the Rigby2D scripting API (`import rigby`: bones, slots, animations, keys, selection, time; see docs/scripting.md), then save the project. The script runs in a sandbox (CPython 3.14 on Pyodide, standard library only). print() output is returned. If the script raises, nothing is saved and the traceback is returned. dry_run: true runs it without saving (for queries). 'animation' and 'time' set what rigby.current_animation() and rigby.time() return; 'selection' sets rigby.selected_bones().
+Run a Python script against a project with the Rigby2D scripting API (`import rigby`: bones, slots, animations, keys, selection, time; see https://rigby2d.com/docs/scripting.html), then save the project. The script runs in a sandbox (CPython 3.14 on Pyodide, standard library only). print() output is returned. If the script raises, nothing is saved and the traceback is returned. dry_run: true runs it without saving (for queries). 'animation' and 'time' set what rigby.current_animation() and rigby.time() return; 'selection' sets rigby.selected_bones().
 
 | Parameter | Type | Description |
 | --- | --- | --- |

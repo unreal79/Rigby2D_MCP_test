@@ -10,13 +10,14 @@ animations work on any skin and can be layered in games.
 
 | To | Do |
 | --- | --- |
-| Create an animation | **+ New** in the timeline. You switch to Animate mode. |
+| Create an animation | **+** (*New animation*) in the timeline. You switch to Animate mode. |
 | Choose one | The animation menu at the left of the timeline. |
-| Rename it | Edit the name field next to **+ New**. |
+| Rename it | Edit the name field next to **+**. |
 | Set its length | **Length** (seconds). Keys after the end make it longer. |
-| Delete it | The 🗑 button. |
+| Delete it | The *Delete animation* button (the bin). |
 
-The frame rate is a project setting (Project panel, **Frame rate**); keys snap to its frames.
+The frame rate is a project setting, the **fps** menu in the timeline bar (and *Output ▸ Frame rate* in
+the Film workspace); keys snap to its frames.
 
 ## Setting keys
 
@@ -24,7 +25,7 @@ Switch to **Animate mode** (<kbd>Tab</kbd>), move the time cursor, change the po
 
 | Command | Default key | Keys |
 | --- | --- | --- |
-| **◆ Key** (timeline) | | Everything about the selection: all transforms of the selected bones, or a slot's image. |
+| **Key** (timeline) | | Everything about the selection: all transforms of the selected bones, or a slot's image. |
 | *Key changed properties* | <kbd>K</kbd> | Every change you made that is not keyed yet. |
 | *Key the current tool's property* | <kbd>L</kbd> | Rotation with the Rotate tool, position with Translate, and so on. |
 | *Key all transforms of the selection* | <kbd>Ctrl</kbd>+<kbd>L</kbd> | Rotate, translate, scale and shear of the selected bones. |
@@ -55,8 +56,10 @@ buttons show the state: keyed at this frame, changed but not keyed, or not keyed
 | ◀ / ▶\| | Previous / next frame (<kbd>F</kbd> / <kbd>R</kbd>, or the arrow keys). <kbd>Shift</kbd> moves 10 frames. |
 | ▶ | Play and stop (<kbd>Space</kbd>). <kbd>A</kbd> plays backward. |
 | **Loop** | Play the animation in a loop (<kbd>Ctrl</kbd>+<kbd>R</kbd>). |
+| **Boomerang** | With Loop on, play to the end and back again (ping-pong), to check a cycle both ways. A preview only: exports are unchanged. |
 | Speed | 0.1× to 2× playback speed, for checking timing. |
-| Time | Frame and seconds, or timecode and frame in the Film workspace. |
+| fps | The project's frame rate. |
+| Time | At the end of the bar: frame and seconds, or timecode (`MM:SS:FF`, minutes:seconds:frames) and frame in the Film workspace. |
 
 <kbd>W</kbd> and <kbd>S</kbd> jump to the next and previous key; <kbd>E</kbd> to the last key.
 Keys are listed for the default *Spine-like* preset; see [Keyboard shortcuts](shortcuts.md).
@@ -76,19 +79,22 @@ draw order and events. Diamonds are keys; their color tells the curve (stepped k
 | Select a key | Click it. <kbd>Ctrl</kbd>+click adds to the selection. |
 | Select several | Drag a box around them. |
 | Move keys | Drag a selected key; the others move with it. |
-| Select whole frames | Turn on **▦ Frames** and drag across the ruler area: every key in those frame columns. |
-| Select several areas | <kbd>Alt</kbd>+drag adds another area, or turn on **＋ Multi** so every drag adds one. |
-| Retime keys | Click **⇔ Retime** and drag an edge of the selection (or right-drag at any time): the keys stretch or squeeze relative to the opposite edge. |
+| Select whole frames | Turn on *Select whole frame columns* (the columns button) and drag across the ruler area: every key in those frame columns. |
+| Select several areas | <kbd>Alt</kbd>+drag adds another area, or turn on *Multi-select* (next to it) so every drag adds one. |
+| Retime keys | Click *Retime* (the double arrow) and drag an edge of the selection (or right-drag at any time): the keys stretch or squeeze relative to the opposite edge. |
 | Change the curve | Right-click a key: *Linear*, *Ease in-out*, *Ease in*, *Ease out* or *Stepped*. |
+| Cut, copy and paste | Right-click a key ▸ *Cut* or *Copy*; once keys are copied, right-click any spot ▸ *Paste here* pastes at that frame. |
+| Zoom the timeline | <kbd>Ctrl</kbd>+wheel zooms time around the cursor, <kbd>Alt</kbd>+wheel pans. Zoom all the way out to see the whole animation again. |
 | Delete keys | Right-click ▸ *Delete key*, or <kbd>Delete</kbd>. |
 
 Keys always land on whole frames.
 
 ### Copy and paste keys
 
-Select keys and press <kbd>Ctrl</kbd>+<kbd>C</kbd> (or **⧉ Copy**). The copied area stays marked in
+Select keys and press <kbd>Ctrl</kbd>+<kbd>C</kbd> (or the *Copy* button, or right-click ▸ *Copy*); <kbd>Ctrl</kbd>+<kbd>X</kbd> cuts them. The copied area stays marked in
 green and a preview follows the time cursor; move it to where the first key should land and press
-<kbd>Ctrl</kbd>+<kbd>V</kbd> (or **⎘ Paste**). <kbd>Escape</kbd> cancels.
+<kbd>Ctrl</kbd>+<kbd>V</kbd> (or the *Paste* button). Right-click ▸ *Paste here* pastes at the frame you clicked.
+<kbd>Escape</kbd> cancels.
 
 - Keys keep their tracks by name (bone, slot, deformed attachment, IK constraint), so a paste into
   another animation, or after bones were added or deleted, lands on the same tracks. Deform and IK
@@ -113,6 +119,9 @@ Each key has a curve that shapes the motion to the next key:
 | **Ease out** | Starts fast, ends slowly: settling, landing. |
 | **Stepped** | Holds the value until the next key: snappy timing, image swaps. |
 | **Custom** | Any Bézier shape, set in the [graph editor](graph-editor.md). |
+
+New bone keys are linear. To start them eased or stepped instead, set *Preferences ▸ Editing ▸ Curve
+of new keys*; it changes only keys made from then on.
 
 ## Tips for good motion
 

@@ -102,14 +102,15 @@ export class Pose {
     if (this.deform) this.deform.clear();
     else this.deform = new Map();
     if (!this.ik || this.ik.length !== sk.ik.length) this.ik = sk.ik.map(() => ({}));
-    sk.ik.forEach((c, i) => {
+    for (let i = 0; i < sk.ik.length; i++) {
+      const c = sk.ik[i];
       const s = this.ik[i];
       s.mix = c.mix;
       s.softness = c.softness;
       s.bendPositive = c.bendPositive;
       s.compress = c.compress;
       s.stretch = c.stretch;
-    });
+    }
     const list = this.ensureConstraints(sk);
     resetConstraintState(list, this.constraintState);
   }
@@ -258,9 +259,9 @@ export class Pose {
     const list = this.ensureConstraints(sk);
     const delta = this.physicsDelta;
     this.physicsDelta = 0;
-    const steps = [...sk.ik.map((c, i) => ({ order: c.order, ik: i })), ...list.map((c, i) => ({ order: c.order, other: i }))];
-    steps.sort((x, y) => x.order - y.order);
-    for (const step of steps) {
+    const steps = this.constraintSteps(sk, list);
+    for (let si = 0; si < steps.length; si++) {
+      const step = steps[si];
       if (step.ik !== undefined) {
         const c = sk.ik[step.ik];
         if (c.skinRequired && !this.skinActive(sk, (skin) => skin.ik.includes(step.ik))) continue;
@@ -283,6 +284,32 @@ export class Pose {
       else if (result?.world) this.setWorlds(sk, result.world);
       else if (result?.local) for (const b of result.local) this.updateBranch(sk, b);
     }
+  }
+
+  /**
+   * IK and the other constraints in solving order. Kept between updates and rebuilt when the
+   * constraints change or are reordered (checked without allocating).
+   */
+  constraintSteps(sk, list) {
+    let steps = this._steps;
+    let fresh = !steps || this._stepsIk !== sk.ik || this._stepsList !== list || steps.length !== sk.ik.length + list.length;
+    if (!fresh) {
+      for (let k = 0; k < steps.length; k++) {
+        const st = steps[k];
+        if ((st.ik !== undefined ? sk.ik[st.ik]?.order : list[st.other]?.order) !== st.order) {
+          fresh = true;
+          break;
+        }
+      }
+    }
+    if (fresh) {
+      steps = [...sk.ik.map((c, i) => ({ order: c.order, ik: i })), ...list.map((c, i) => ({ order: c.order, other: i }))];
+      steps.sort((x, y) => x.order - y.order);
+      this._steps = steps;
+      this._stepsIk = sk.ik;
+      this._stepsList = list;
+    }
+    return steps;
   }
 
   /** Clears physics so every simulated bone starts again from its animated pose. */
@@ -386,8 +413,8 @@ export class Pose {
       return;
     }
     const [p, ch] = c.bones;
-    let P = this.world[p].apply([0, 0]);
-    let C = this.world[ch].apply([0, 0]);
+    const P = this.world[p].apply([0, 0]);
+    const C = this.world[ch].apply([0, 0]);
     const tip = this.world[ch].apply([sk.bones[ch].length, 0]);
     const a = len(sub(C, P));
     const bLen = len(sub(tip, C));
@@ -398,13 +425,17 @@ export class Pose {
     }
     let d = len(sub(target, P));
     if (state.stretch && d > a + bLen) {
+      // Out of reach: straighten the chain toward the target (the parent aims, then the child),
+      // then stretch the parent to the distance. Straightening first keeps the child in line, so
+      // the parent's scale stretches it along its length instead of skewing it.
+      aim(p, P, C);
+      this.updateBranch(sk, p);
+      this.finishTwoBone(sk, p, ch, target, mix, state, parentSign);
       const s = (d / (a + bLen) - 1) * mix + 1;
       this.applied[p].scale_x *= s;
       if (c.uniform) this.applied[p].scale_y *= s;
       this.updateBranch(sk, p);
-      P = this.world[p].apply([0, 0]);
-      C = this.world[ch].apply([0, 0]);
-      return this.finishTwoBone(sk, p, ch, target, mix, state, parentSign);
+      return;
     }
     const soft = state.softness;
     if (soft > 0 && d > a + bLen - soft) d = a + bLen - soft * Math.exp(-(d - (a + bLen - soft)) / soft);
@@ -445,23 +476,35 @@ export class Pose {
     return sk.attachment(slot, this.attachment[slot]);
   }
 
-  /** World positions of a mesh-like attachment's vertices as a flat [x, y, ...] array. */
-  worldVertices(sk, slot, att) {
+  /** The deform offsets keyed for a mesh-like attachment in a slot, or undefined. */
+  deformOf(slot, att) {
+    if (!this.deform.size) return undefined;
+    return this.deform.get(att.type === 'linkedmesh' && att.deform ? `${slot}/${att.parent}` : `${slot}/${att.name}`);
+  }
+
+  /**
+   * World positions of a mesh-like attachment's vertices as a flat [x, y, ...] array: a new one, or
+   * `out` (reused, so a runtime drawing every frame doesn't allocate).
+   */
+  worldVertices(sk, slot, att, out = []) {
+    out.length = 0;
     const source = sk.meshSource(slot, att);
-    if (!source) return [];
-    const deformKey = att.type === 'linkedmesh' && att.deform ? `${slot}/${att.parent}` : `${slot}/${att.name}`;
-    const deform = this.deform.get(deformKey);
-    const out = [];
+    if (!source) return out;
+    const deform = this.deformOf(slot, att);
+    const world = this.world;
     if (source.weights) {
       let k = 0;
-      for (const v of source.weights) {
+      const weights = source.weights;
+      for (let vi = 0; vi < weights.length; vi++) {
+        const v = weights[vi];
         let x = 0;
         let y = 0;
-        for (const w of v) {
+        for (let wi = 0; wi < v.length; wi++) {
+          const w = v[wi];
           const bx = w.x + (deform ? deform[k] : 0);
           const by = w.y + (deform ? deform[k + 1] : 0);
           k += 2;
-          const m = this.world[w.bone];
+          const m = world[w.bone];
           x += (m.a * bx + m.c * by + m.tx) * w.weight;
           y += (m.b * bx + m.d * by + m.ty) * w.weight;
         }

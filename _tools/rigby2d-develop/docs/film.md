@@ -17,7 +17,7 @@ A workspace decides which tools the editor shows; it never changes the animation
 | For | Game engines and apps | Film, video, motion graphics |
 | Output | Skeleton JSON / `.skel` + atlas, played by the runtimes | PNG sequences, WebM and MP4 renders (exports stay available) |
 | Frame rate of new projects | 30 fps | 24 fps |
-| Time display | Frames and seconds | Timecode (`HH:MM:SS:FF`) and frames |
+| Time display | Frames and seconds | Timecode (`MM:SS:FF`, minutes:seconds:frames; hours appear past one hour) and frames |
 | Output panel, output frame, render | Hidden | Shown |
 | Pose library | Yes | Yes |
 | Face controls, audio tracks, lip-sync | Hidden | Shown |
@@ -31,7 +31,7 @@ are never written to skeleton exports, so game files are identical whichever wor
 
 ## Output settings
 
-Select nothing (click an empty area of the viewport) to see the project panel. Its **Output**
+Open the inspector's **Project** tab (or select nothing) to see the project settings. Its **Output**
 section sets:
 
 ![The project panel in the Film workspace: output frame rate, size, background and framing, then the animation's audio track](images/project-film.jpg "NILA's output settings (1080p at 60 fps, following the camera bone) and her voiceover track")

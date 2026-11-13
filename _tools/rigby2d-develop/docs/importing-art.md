@@ -65,11 +65,11 @@ when nothing is selected).
   the Translate tool in Setup mode.
 
 To add an image to an existing slot, for example a new mouth shape, select the slot and use
-**＋ Add image to this slot…** in the inspector. See [Attachments](bones-and-slots.md#attachments).
+**Add image to this slot…** in the inspector. See [Attachments](bones-and-slots.md#attachments).
 
 ## Texture filtering and pixel art
 
-Select nothing to see the **Project** panel. Its **Textures** setting decides how images are drawn
+Open the inspector's **Project** tab (or select nothing). Its **Textures** setting decides how images are drawn
 when scaled:
 
 | Setting | Use it for | Effect |
@@ -77,7 +77,29 @@ when scaled:
 | **Smooth (linear)** | Painted and vector-style art | Smooth scaling. Exported atlases use `filter: Linear, Linear`. |
 | **Pixel art (nearest)** | Pixel art | Every pixel stays sharp in the viewport, in renders and in games: exported atlases use `filter: Nearest, Nearest`, which the runtimes follow. |
 
-Opening a skeleton export picks the setting up from its atlas.
+Opening a skeleton export picks the setting up from its atlas. Importing pixel art (PNGs or a PSD
+with hard edges and a small palette) into a project without images turns the **Pixel grid** below
+on by itself, at the scale the art was exported at (1× to 4×); the status bar says so, and the
+Project panel changes it back.
+
+### Pixel grid
+
+Sharp textures keep each pixel crisp, but a rotated or bent part still lands between screen pixels,
+so its pixels come out tilted and in mixed sizes ("mixels"). The Project panel's **Pixel grid**
+fixes that: the viewport and renders draw the skeleton at the art's own pixel size, then scale that
+up sharp, so every part, however it turns, is drawn in whole pixels on one grid, as a pixel-art game
+shows it.
+
+- **On: 1 unit per pixel** for art imported at its real size (the usual case). Use 2 to 4 units per
+  pixel for art you imported at 2× to 4×.
+- The grid is fixed to the world (from the origin), so a part that doesn't move keeps its pixels.
+- Zoom in and each pixel's outline appears, for placing pivots and checking silhouettes.
+- Turning it on also sets **Textures** to *Pixel art (nearest)*.
+- Sprite sheets exported at 100% already draw one sheet pixel per art pixel; use 100% and let the
+  game scale them up.
+
+The setting is saved with the project. Game runtimes draw the skeleton at the game's own resolution;
+for the same look in a game, render it into a target at the art's size and scale that up.
 
 ## Images in the project
 

@@ -9,9 +9,10 @@ characters on a stage with a moving camera and parallax.
 <div class="cards engines">
 <a href="#godot" data-mark="godot"><strong>Godot <span class="status">Complete</span></strong><code>RigbySkeleton2D</code> and <code>RigbyScene2D</code> nodes, a GDExtension on the Rust core. <small>Godot 4.3+ · Windows, macOS, Linux</small></a>
 <a href="#unity" data-mark="unity"><strong>Unity <span class="status">Complete</span></strong><code>RigbySkeleton</code> and <code>RigbyScene</code> components in C#, multi-core, no garbage. <small>Unity 2021.3+ and Unity 6 · every platform</small></a>
-<a href="#defold" data-mark="defold"><strong>Defold <span class="status">New</span></strong>A native extension: the runtime in C++, golden-tested like the Rust one, with a Lua player. <small>Defold 1.14+ · every platform</small></a>
+<a href="#defold" data-mark="defold"><strong>Defold <span class="status">New</span></strong>A native extension: the runtime in C++, golden-tested like the Rust one, a model component the Defold editor plays live, and a Lua player. <small>Defold 1.14+ · every platform</small></a>
 <a href="#cocos-creator" data-mark="cocos"><strong>Cocos Creator <span class="status">Complete</span></strong>A <code>RigbySkeleton</code> component for 2D scenes, drawn in order with sprites and UI. <small>Cocos Creator 3.8 · web and native</small></a>
 <a href="#phaser" data-mark="phaser"><strong>Phaser <span class="status">Complete</span></strong>A plugin: <code>this.add.rigby()</code>, on the JavaScript runtime. <small>Phaser 3.60+ and 4 · WebGL</small></a>
+<a href="#pixijs" data-mark="pixijs"><strong>PixiJS <span class="status">New</span></strong>Native PixiJS display objects, batched with your sprites. <small>PixiJS 8 · WebGL and WebGPU</small></a>
 <a href="#javascript" data-mark="javascript"><strong>JavaScript <span class="status">Complete</span></strong>No dependencies, with a ready-made WebGL renderer. <small><code>src/core</code> · <code>src/webgl</code></small></a>
 <a href="#rust" data-mark="rust"><strong>Rust <span class="status">Complete</span></strong>No dependencies; matches the JavaScript runtime frame by frame, 3 to 4× faster. <small><code>runtimes/rust/rigby-runtime</code></small></a>
 </div>
@@ -22,7 +23,7 @@ JavaScript runtime.
 **From the editor:** *File ▸ Get runtimes…* downloads the runtimes that match your editor's version:
 the Unity package (or its git URL), the Godot addon for your system (or installs it straight into a
 Godot project), the Cocos Creator package (or installs it straight into a Cocos project), and the
-Phaser bundles. The welcome screen also offers a **Phaser game starter**: a
+Phaser and PixiJS bundles. The welcome screen also offers a **Phaser game starter**: a
 small playable game with NILA to build on.
 
 ## JavaScript
@@ -120,6 +121,32 @@ input) with the full animation state: tracks, crossfades, queues, skins, events 
 for attaching objects. It plays exactly as the editor does. See the
 [Phaser guide](https://github.com/jaisurya-dev-art/rigby2d/blob/develop/runtimes/phaser/README.md).
 
+## PixiJS
+
+Native [PixiJS](https://pixijs.com) 8 display objects, on WebGL and WebGPU. Download
+`rigby2d-pixi-<version>.mjs` or the script-tag `rigby2d-pixi-<version>.js` from the
+[latest release](https://github.com/jaisurya-dev-art/rigby2d/releases/latest):
+
+```js
+import * as PIXI from 'pixi.js';
+import { rigbyPixi } from './rigby2d-pixi-<version>.mjs';
+const { loadRigby, RigbySkeleton } = rigbyPixi(PIXI);
+
+const hero = new RigbySkeleton(await loadRigby('assets/hero.skel', 'assets/hero.atlas'), { animation: 'idle' });
+hero.position.set(400, 550);
+app.stage.addChild(hero);
+hero.play('run', true, 0.2);                         // crossfade over 0.2 s
+hero.attachToBone('hand_r', sword);                  // any display object follows a bone
+```
+
+A `RigbySkeleton` is a PixiJS `Container`. Its attachments are PixiJS meshes that go through
+PixiJS's batcher, so a character is usually one batched mesh, drawn in the same draw calls as your
+sprites. Filters, masks, tint, alpha, blend modes, bounds and pointer events work as for any display
+object. It has the full animation state (tracks, crossfades, queues, per-object skins, events),
+two-color tint on WebGL and WebGPU, and bone positions for attaching objects. It plays exactly as
+the editor does. See the
+[PixiJS guide](https://github.com/jaisurya-dev-art/rigby2d/blob/develop/runtimes/pixi/README.md).
+
 ## Defold
 
 ![The Defold 1.14 editor with the demo project, and the game it launched playing a Rigby2D scene](images/runtime-defold.jpg)
@@ -133,7 +160,26 @@ Dependencies* and choose *Project ▸ Fetch Libraries*:
 https://github.com/jaisurya-dev-art/rigby2d/releases/latest/download/rigby2d-defold.zip
 ```
 
-Put your export (`.skel` or `.json`, `.atlas` and its `.png`) in a folder listed in *Custom
+**Rigby2D models, live in the Defold editor.** *File ▸ Export ▸ Defold model…* saves a character into
+your Defold project as a **Rigby2D Model** component (`hero.rigbymodel`, with its skeleton, its images
+in a Defold atlas, and a game object `hero.go`). Drag `hero.go` into a collection: the Defold editor
+plays the model in the scene view through the Rigby2D runtime itself, so pick an animation and a
+skin in its properties and press **Play** (<kbd>Space</kbd>) to watch it move. In the game it plays
+natively, and scripts drive it:
+
+![Rigbytron, a Rigby2D model, in the Defold editor's scene view](images/runtime-defold-editor.jpg)
+
+```lua
+rigby.play("hero#rigbymodel", "attack", { loop = false, mix = 0.1 })
+rigby.queue("hero#rigbymodel", "idle", { mix = 0.2 })
+rigby.on_event("hero#rigbymodel", function(self, event) print(event.kind, event.name) end)
+```
+
+`rigby.set_skin`, `rigby.bone` (to attach things to bones), `rigby.stop` and `go.get` / `go.set` of
+`animation`, `skin` and `playback_rate` do the rest.
+
+**Or play a skeleton from a script**, to create characters from code or play scenes (they appear
+when the game runs). Put your export (`.skel` or `.json`, `.atlas` and its `.png`) in a folder listed in *Custom
 Resources*. On the character's game object, add a factory with the id `rigby2d` and the prototype
 `/rigby2d/piece.go`, and a script:
 
@@ -153,8 +199,8 @@ function final(self) self.hero:delete() end
 The C++ runtime writes the triangles straight into the vertex buffers of a few mesh components:
 no work per vertex in Lua and no allocation in steady playback. `player:bone(name)` places
 weapons and effects on bones, and `rigby2d.new_scene({ scene = "/assets/intro/intro.scene.json" })`
-plays a whole scene, with the stage's camera to follow. The demo (`rigby2d-defold-demo` on the Releases page) plays NILA
-and Rigbytron. See the [Defold guide](../runtimes/defold/README.md) for every call.
+plays a whole scene, with the stage's camera to follow. The demo (`rigby2d-defold-demo` on the Releases page) plays
+Rigbytron as a Rigby2D model and NILA from a script. See the [Defold guide](../runtimes/defold/README.md) for every call.
 
 ## Cocos Creator
 
