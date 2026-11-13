@@ -89,6 +89,8 @@ python add_dance.py                       # input/human.rigby -> output/human.ri
 python add_dance.py input/human.rigby build/human.rigby
 ```
 
+![Human Dance](output/human_dance.gif)
+
 It creates a 20-second `dance` animation: a relaxed groove, arms waving overhead,
 side steps with alternate leg lifts, a wind-down, and a full side split that is held
 at the end. The motion is generated from smooth section poses that are cross-faded
