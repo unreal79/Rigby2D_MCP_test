@@ -20,6 +20,7 @@ rigby2d_mcp_utils.py       (shared client, logging, paths)   + logs/run-<timesta
 | --- | --- |
 | `add_arms_up.py` | Demo script. Reads the input project, adds an `arms_up` animation (arms rise, then lower) and writes the output project. |
 | `add_dance.py` | Demo script. Builds a 20-second `dance` for the stick figure in `input/human.rigby`: groove, overhead waves, side steps, then a full side split at the end. |
+| `add_walk.py` | Demo script. Builds a looping 1.6-second `walk` (two steps, in place) for the caveman in `input/caveman1.rigby`, ready to drive a character in a game. |
 | `rigby2d_mcp_utils.py` | Reusable MCP client: process launch, JSON-RPC transport, Node.js and server discovery, path validation, `RunLog`. Import it from any new script. |
 | `run_add_animation.bat` | Convenience wrapper that sets the environment the script needs and runs it. |
 | `input/test.rigby` | Local, git-ignored. Sample character work file ("NILA"): 39 bones, 42 slots, 1 skin, 10 constraints, animations `idle` and `arms_up`. The script never modifies it. |
@@ -98,6 +99,23 @@ and sampled at 20 keys per second, so the body never stops dead or snaps between
 moves. The feet are counter-rotated while the pelvis sways, which reads as a weight
 shift instead of a slide. The input file is only read; the animation is written to
 `output/human.rigby`.
+
+### Walk demo
+
+`input/caveman1.rigby` is a skinned, cut-out caveman whose arms and legs are driven by
+IK constraints. The walk script uses the same client and arguments:
+
+```powershell
+python add_walk.py                       # input/caveman1.rigby -> output/caveman1.rigby
+python add_walk.py --preview             # also renders a contact sheet to logs/preview/
+```
+
+It creates a `walk` animation: two steps in 1.6 s, looping, with the root kept in place
+so a game can move the character itself. The planted foot stays on one floor line and
+slides backwards at a constant speed, so the run prints the ground speed the engine
+should use (about 270 units/s) and the step length. A rig fix is applied to the copy:
+the right leg is moved down 41 units so that both feet can reach the same floor line;
+the leg is drawn behind the body, so the shift cannot be seen.
 
 ### Logs
 

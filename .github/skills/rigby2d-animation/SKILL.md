@@ -182,6 +182,23 @@ the left arm — **check `sample_pose` instead of assuming**.
 39 bones, hand IK `mix` is 0 (animate the arm bones directly), foot IK `mix` is 1 (move
 `ik_foot_l/r`), physics drives the braids and jewelry.
 
+### `input/caveman1.rigby` — hunched caveman, 16 bones
+
+Skinned cut-out meshes, faces **−X**, no foot bones: a leg is thigh + shin and the drawn
+foot is welded to the shin. Its sole is square to the shin, so the foot's pitch *is* the
+shin angle: `-90` flat, `-70` toe down, `-112` toe up.
+
+- All four IK constraints have `mix` **1** *and* `bendPositive` **false**, so knees and
+  elbows always swing towards +X. Facing −X that means the knee bends *backwards*: keep
+  the knee flex small (≤ 20°) and let the feet do the visible work.
+- The IK targets are children of `root`, so a target key is a world offset: design the
+  pose in FK (thigh angle, knee flex) and key `knee + shin_length · dir(shin angle)`;
+  a two-bone chain with equal segments reproduces the pose exactly.
+- The legs were drawn at different lengths (334 vs 362 socket→sole) and the drawn feet
+  disagree by ±10 units at double support. `add_walk.py` drops the right leg 41 units
+  (it is drawn behind the body, so the shift is invisible) and blends the two feet when
+  it places `root.y` instead of taking the lower one.
+
 ## Pitfalls
 
 - `describe_animation` gives key **times**, not values; use `sample_pose` or the ZIP.
@@ -199,5 +216,7 @@ the left arm — **check `sample_pose` instead of assuming**.
 
 - `add_arms_up.py` — minimal one-batch edit, verification, path handling.
 - `add_dance.py` — section blending, smootherstep, leg compensation, geometric split.
+- `add_walk.py` — looping in-place walk: IK-target authoring from FK, support-weighted
+  pelvis height, rig fix, loop/floor/smoothness verification.
 - `rigby2d_mcp_utils.py` — transport, `RunLog`, path helpers, `pose_bone()`.
 - `_tools/rigby2d-develop/docs/mcp-tools.md` — every tool and parameter.
